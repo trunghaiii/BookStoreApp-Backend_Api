@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 6969;
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-app.use('/', userRoute);
+app.use('/api/v1/user', userRoute);
 
 app.listen(PORT, async () => {
     await mongooseConnection()
