@@ -11,6 +11,7 @@ interface IUser {
     isActive: boolean;
     createdAt: any;
     updatedAt: any;
+    refreshToken: string;
 
 }
 
@@ -25,7 +26,7 @@ const userSchema = new mongoose.Schema<IUser>({
     isActive: { type: Boolean, required: true },
     createdAt: { type: Date, required: true },
     updatedAt: { type: Date, required: true },
-
+    refreshToken: { type: String, required: false }
 
 
 });

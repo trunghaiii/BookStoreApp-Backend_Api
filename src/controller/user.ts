@@ -97,7 +97,8 @@ export const postRegisterUser = async (req: express.Request, res: express.Respon
             avatar: "",
             isActive: true,
             createdAt: date,
-            updatedAt: date
+            updatedAt: date,
+            refreshToken: ""
         });
         await user.save();
 

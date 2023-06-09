@@ -5,6 +5,7 @@ const cors = require('cors')
 
 import mongooseConnection from "./config/mongoose"
 import userRoute from "./routes/user"
+import authRoute from "./routes/auth"
 
 const app: Application = express();
 
@@ -17,6 +18,8 @@ app.use(cors());
 
 
 app.use('/api/v1/user', userRoute);
+app.use('/api/v1/auth', authRoute);
+
 
 app.listen(PORT, async () => {
     await mongooseConnection()
