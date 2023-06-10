@@ -89,6 +89,14 @@ export const postLogin = async (req: express.Request, res: express.Response) => 
     try {
         let result = await User.updateOne({ email }, { refreshToken: token.refresh_token })
 
+        // set cookies
+        res.cookie('refresh_token', token.refresh_token, {
+            maxAge: 86400000, // Cookie expiration time in milliseconds (24h)
+            httpOnly: true, // Restrict access to the cookie from client-side JavaScript
+            secure: false, // Only send the cookie over HTTPS
+            sameSite: 'strict' // Only send the cookie for same-site requests
+        });
+
         return res.status(200).json({
             errorMessage: "Login Successfully!!!",
             errorCode: 0,
