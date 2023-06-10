@@ -16,6 +16,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // config to fix being blocked by cors policy when call api from frontend
 app.use(cors());
 
+// fix bug blocked by cors policy
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+});
 
 app.use('/api/v1/user', userRoute);
 app.use('/api/v1/auth', authRoute);
