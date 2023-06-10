@@ -6,9 +6,12 @@ const bcrypt = require('bcrypt');
 
 // function for generateing jwt token
 interface ItokenData {
-    fullName: string,
+    id: any,
     email: string,
-    role: string
+    phone: string,
+    fullName: string,
+    role: string,
+    avatar: string
 
 }
 const generateToken = (tokenData: ItokenData) => {
@@ -80,9 +83,12 @@ export const postLogin = async (req: express.Request, res: express.Response) => 
     }
     // generate token
     let token: ItokenData = generateToken({
-        fullName: emailFound[0].fullName,
+        id: emailFound[0]._id,
         email: emailFound[0].email,
-        role: emailFound[0].role
+        phone: emailFound[0].phone,
+        fullName: emailFound[0].fullName,
+        role: emailFound[0].role,
+        avatar: emailFound[0].avatar
     })
 
     // 4. update refesh token to db and return result to front end
@@ -94,7 +100,7 @@ export const postLogin = async (req: express.Request, res: express.Response) => 
             maxAge: 86400000, // Cookie expiration time in milliseconds (24h)
             httpOnly: true, // Restrict access to the cookie from client-side JavaScript
             secure: false, // Only send the cookie over HTTPS
-            sameSite: 'strict' // Only send the cookie for same-site requests
+            //sameSite: 'strict' // Only send the cookie for same-site requests
         });
 
         return res.status(200).json({
@@ -125,3 +131,34 @@ export const postLogin = async (req: express.Request, res: express.Response) => 
     // res.send("post login")
 
 };
+
+export const getAccount = async (req: express.Request, res: express.Response) => {
+    // console.log(req.headers.authorization);
+    if (req.headers.authorization) {
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+            //console.log(decoded);
+
+            return res.status(200).json({
+                errorMessage: "",
+                errorCode: 0,
+                data: {
+                    user: decoded.data
+                }
+            })
+
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    }
+
+    res.send("Get account enpoint ready!!!")
+}
