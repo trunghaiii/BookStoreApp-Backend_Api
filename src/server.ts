@@ -14,7 +14,10 @@ const PORT = process.env.PORT || 6969;
 //config to get req.body from client input
 app.use(bodyParser.urlencoded({ extended: true }));
 // config to fix being blocked by cors policy when call api from frontend
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // Specify the allowed origin
+    credentials: true, // Allow credentials 
+}));
 
 // fix bug blocked by cors policy
 app.use((req, res, next) => {
