@@ -135,12 +135,16 @@ export const postLogin = async (req: express.Request, res: express.Response) => 
 export const getAccount = async (req: express.Request, res: express.Response) => {
     // console.log(req.headers.authorization);
     if (req.headers.authorization) {
+        //1. get access token sent from front end
         let access_token = req.headers.authorization.split(' ')[1]
 
         try {
+
+            // 2. verify and decode accesstoken to get user information
             const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
             //console.log(decoded);
 
+            // 3. return user information for front end
             return res.status(200).json({
                 errorMessage: "",
                 errorCode: 0,
@@ -161,4 +165,50 @@ export const getAccount = async (req: express.Request, res: express.Response) =>
     }
 
     res.send("Get account enpoint ready!!!")
+}
+
+export const postLogOut = async (req: express.Request, res: express.Response) => {
+    // 1. verify and decode the access token to get user infomation
+    if (req.headers.authorization) {
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        let userData;
+        try {
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+            userData = decoded;
+
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+        // 2. delete cookies:
+        res.clearCookie('refresh_token');
+        // 3. delete the refresh token of user in the database:
+        const userId = userData.data.id;
+        //console.log(userId);
+
+        try {
+            const response = await User.findByIdAndUpdate(userId, { refreshToken: '' })
+
+            return res.status(200).json({
+                errorMessage: "LogOut Successfully!!!",
+                errorCode: 0,
+                data: ""
+            })
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "Something wrong with delete the refresh token of user in the database",
+                errorCode: -1,
+                data: ""
+            })
+            // console.log(error);
+
+        }
+
+    }
+    // res.send("logouttt")
 }
