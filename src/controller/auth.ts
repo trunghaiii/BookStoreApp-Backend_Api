@@ -154,7 +154,7 @@ export const getAccount = async (req: express.Request, res: express.Response) =>
             })
 
         } catch (error) {
-            return res.status(400).json({
+            return res.status(401).json({
                 errorMessage: "Something wrong with your access token(invalid,expired,...)",
                 errorCode: -1,
                 data: ""
@@ -178,7 +178,7 @@ export const postLogOut = async (req: express.Request, res: express.Response) =>
             userData = decoded;
 
         } catch (error) {
-            return res.status(400).json({
+            return res.status(401).json({
                 errorMessage: "Something wrong with your access token(invalid,expired,...)",
                 errorCode: -1,
                 data: ""
