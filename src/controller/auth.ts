@@ -212,3 +212,47 @@ export const postLogOut = async (req: express.Request, res: express.Response) =>
     }
     // res.send("logouttt")
 }
+
+export const getRefreshToken = async (req: express.Request, res: express.Response) => {
+    let refresh_token = req.cookies.refresh_token;
+
+    // 1. verify and decode the refresh token to get user infomation
+    let userData;
+    try {
+        const decoded = await jwt.verify(refresh_token, process.env.REFRESH_TOKEN_KEY);
+        userData = decoded;
+
+    } catch (error) {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your refresh token(invalid,expired,...)",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // 2. generate new pair of access token and refresh token
+    let token = generateToken(userData.data)
+
+    // 3. set cookies with new refresh token
+    res.cookie('refresh_token', token.refresh_token, {
+        maxAge: 86400000, // Cookie expiration time in milliseconds (24h)
+        httpOnly: true, // Restrict access to the cookie from client-side JavaScript
+        secure: false, // Only send the cookie over HTTPS
+        //sameSite: 'strict' // Only send the cookie for same-site requests
+    });
+    // 4. send access token back to front end
+    return res.status(200).json({
+        errorMessage: "",
+        errorCode: 0,
+        data: {
+            access_token: token.access_token,
+            user: userData.data
+        }
+    })
+    console.log(token);
+
+
+
+    res.send("refresh toeknnnn")
+}
