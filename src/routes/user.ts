@@ -1,12 +1,13 @@
 import express from "express"
 const apiRouter = express.Router()
-import { postRegisterUser } from "./../controller/user"
+import { postRegisterUser, getUserPagination } from "./../controller/user"
 
 // export default (userRoute: express.Router) => {
 //     userRoute.get('/user', getUser);
 // };
 
 apiRouter.post('/register', postRegisterUser);
+apiRouter.get('/', getUserPagination);
 
 
 export default apiRouter;

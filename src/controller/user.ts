@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { User } from "../db/user"
 import { userSchema } from "../config/joiValidate"
 const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken")
 
 // function for validating user data
 const validateUser = (userObj: object): string => {
@@ -26,6 +27,7 @@ const encryptPassword = (plainPassword: string): string => {
 
     return ""
 }
+
 export const postRegisterUser = async (req: express.Request, res: express.Response) => {
 
     // 1. validate user data with joi
@@ -126,3 +128,87 @@ export const postRegisterUser = async (req: express.Request, res: express.Respon
 
     //res.send("Hello World !!")
 };
+export const getUserPagination = async (req: express.Request, res: express.Response) => {
+
+    let pages: number; // number of pages distributed for users number
+    let total: number; // total number of users
+
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. Get number of user in the database:
+    try {
+        let response = await User.collection.count();
+        total = response;
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with Get number of user in the database",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // 2. calculate pages
+    let pageSize: number = Number(req.query.pageSize);
+    pages = Math.ceil(total / pageSize)
+
+
+    // 3. getting user data based on pageSize and current got from front end:
+    let current: number = Number(req.query.current);
+    let userData
+    try {
+        let response = await User.find().skip((current - 1) * pageSize).limit(pageSize)
+        userData = response
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with Get number of user in the database",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // 4. return data for front end:
+    return res.status(200).json({
+        errorMessage: "Get all user with pagination successfully",
+        errorCode: 0,
+        data: {
+            meta: {
+                current: current,
+                pageSize: pageSize,
+                pages: pages,
+                total: total
+            },
+            result: userData
+        }
+    })
+
+
+    res.send("user paginate")
+}
