@@ -159,19 +159,52 @@ export const getUserPagination = async (req: express.Request, res: express.Respo
         })
     }
 
-    // 1. Get number of user in the database:
-    try {
-        let response = await User.collection.count();
-        total = response;
+    let { name, email, phone } = req.query;
+    // // 1. Get number of user in the database:
 
-    } catch (error) {
-        return res.status(400).json({
-            errorMessage: "something wrong with Get number of user in the database",
-            errorCode: -1,
-            data: ""
-        })
+    if (name || email || phone) {
+        if (!name) name = ""
+        if (!email) email = ""
+        if (!phone) phone = ""
 
+        //console.log(typeof (name));
+
+        // find the total number of users based on filtered fields
+        try {
+            let response = await User.find({
+                fullName: { $regex: new RegExp(String(name), "i") },
+                email: { $regex: new RegExp(String(email), "i") },
+                phone: { $regex: new RegExp(String(phone), "i") }
+            }).count()
+
+            total = response
+
+
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "something wrong with Get number of user based on filtered fields in the database",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+    } else {
+        // find the total number of users based on nothing
+
+        try {
+            let response = await User.collection.count();
+            total = response;
+
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "something wrong with Get number of user in the database",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
     }
+
 
     // 2. calculate pages
     let pageSize: number = Number(req.query.pageSize);
@@ -181,18 +214,42 @@ export const getUserPagination = async (req: express.Request, res: express.Respo
     // 3. getting user data based on pageSize and current got from front end:
     let current: number = Number(req.query.current);
     let userData
-    try {
-        let response = await User.find().skip((current - 1) * pageSize).limit(pageSize)
-        userData = response
+    if (name || email || phone) {
+        if (!name) name = ""
+        if (!email) email = ""
+        if (!phone) phone = ""
 
-    } catch (error) {
-        return res.status(400).json({
-            errorMessage: "something wrong with Get number of user in the database",
-            errorCode: -1,
-            data: ""
-        })
+        try {
+            let response = await User.find({
+                fullName: { $regex: new RegExp(String(name), "i") },
+                email: { $regex: new RegExp(String(email), "i") },
+                phone: { $regex: new RegExp(String(phone), "i") }
+            }).skip((current - 1) * pageSize).limit(pageSize)
+            userData = response
 
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "something wrong with get filtered user data based on pageSize and current got from front end",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+    } else {
+        try {
+            let response = await User.find().skip((current - 1) * pageSize).limit(pageSize)
+            userData = response
+
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "something wrong with get user data based on pageSize and current got from front end",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
     }
+
 
     // 4. return data for front end:
     return res.status(200).json({
@@ -210,5 +267,5 @@ export const getUserPagination = async (req: express.Request, res: express.Respo
     })
 
 
-    res.send("user paginate")
+    //res.send("user paginate")
 }
