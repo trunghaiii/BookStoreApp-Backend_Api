@@ -269,3 +269,132 @@ export const getUserPagination = async (req: express.Request, res: express.Respo
 
     //res.send("user paginate")
 }
+
+
+export const postCreateUser = async (req: express.Request, res: express.Response) => {
+
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. validate user data with joi
+    try {
+        let error = await validateUser(req.body)
+        //console.log(">>>>", value);
+
+        if (error) {
+            return res.status(400).json({
+                errorMessage: error,
+                errorCode: -1,
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with validate user data with joi",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    //2. check if email already exist in DB:
+
+    try {
+
+        let emailFound = await User.find({ email: req.body.email })
+        if (emailFound.length > 0) {
+            return res.status(400).json({
+                errorMessage: "Email already exist!!!",
+                errorCode: -1,
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with check if email already exist in DB",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // 3. encrypt password:
+    let hashPassword: string
+    try {
+        hashPassword = await encryptPassword(req.body.password)
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with encrypt password",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 4. save user info with user image to the DB:
+
+    let date = new Date().toJSON();
+    const { fullName, email, password, phone } = req.body
+
+    try {
+        const user = new User({
+            fullName: fullName,
+            password: hashPassword,
+            email: email,
+            phone: phone,
+            role: "USER",
+            avatar: req.file?.path,
+            isActive: true,
+            createdAt: date,
+            updatedAt: date,
+            refreshToken: ""
+        });
+        await user.save();
+
+        //console.log(user);
+
+        return res.status(200).json({
+            errorMessage: "Create a new user successfully",
+            errorCode: 0,
+            data: user
+        })
+    } catch (error) {
+        //console.log(error);
+
+        return res.status(400).json({
+            errorMessage: "something wrong with save user info with user image to the DB",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+
+    // console.log("req.body", req.body);
+    // console.log("req.file", req.file);
+
+    // res.send("post create new user")
+}

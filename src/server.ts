@@ -3,6 +3,11 @@ import express, { Application, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 const cookieParser = require('cookie-parser');
 const cors = require('cors')
+const { storage } = require("./cloudinary/index")
+
+// config to get req.body and req.file via form data
+const multer = require('multer')
+const upload = multer({ storage });
 
 import mongooseConnection from "./config/mongoose"
 import userRoute from "./routes/user"
@@ -29,7 +34,8 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/api/v1/user', userRoute);
+
+app.use('/api/v1/user', upload.single('userImage'), userRoute);
 app.use('/api/v1/auth', authRoute);
 
 

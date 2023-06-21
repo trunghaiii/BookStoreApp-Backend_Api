@@ -1,6 +1,6 @@
 import express from "express"
 const apiRouter = express.Router()
-import { postRegisterUser, getUserPagination } from "./../controller/user"
+import { postRegisterUser, getUserPagination, postCreateUser } from "./../controller/user"
 
 // export default (userRoute: express.Router) => {
 //     userRoute.get('/user', getUser);
@@ -8,6 +8,8 @@ import { postRegisterUser, getUserPagination } from "./../controller/user"
 
 apiRouter.post('/register', postRegisterUser);
 apiRouter.get('/', getUserPagination);
+apiRouter.post('/', postCreateUser);
+
 
 
 export default apiRouter;

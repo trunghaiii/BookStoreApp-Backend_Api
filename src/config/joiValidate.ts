@@ -14,6 +14,8 @@ export const userSchema = Joi.object({
         .required(),
 
     phone: Joi.string()
-        .required()
+        .required(),
+
+    userImage: Joi.any()
 
 })
