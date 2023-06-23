@@ -1,6 +1,9 @@
 import express from "express"
 const apiRouter = express.Router()
-import { postRegisterUser, getUserPagination, postCreateUser } from "./../controller/user"
+import {
+    postRegisterUser, getUserPagination,
+    postCreateUser, postUpdateUser
+} from "./../controller/user"
 
 // export default (userRoute: express.Router) => {
 //     userRoute.get('/user', getUser);
@@ -9,6 +12,8 @@ import { postRegisterUser, getUserPagination, postCreateUser } from "./../contro
 apiRouter.post('/register', postRegisterUser);
 apiRouter.get('/', getUserPagination);
 apiRouter.post('/', postCreateUser);
+apiRouter.put('/', postUpdateUser);
+
 
 
 

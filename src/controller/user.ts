@@ -1,7 +1,7 @@
 import express from "express"
 import mongoose from "mongoose";
 import { User } from "../db/user"
-import { userSchema } from "../config/joiValidate"
+import { userSchema, UpdateUserSchema } from "../config/joiValidate"
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken")
 
@@ -9,6 +9,15 @@ const jwt = require("jsonwebtoken")
 const validateUser = (userObj: object): string => {
 
     let value = userSchema.validate(userObj)
+    if (value?.error?.details[0]?.message) {
+        return value?.error?.details[0]?.message;
+    }
+    return ""
+}
+
+const validateUpdateUser = (userObj: object): string => {
+
+    let value = UpdateUserSchema.validate(userObj)
     if (value?.error?.details[0]?.message) {
         return value?.error?.details[0]?.message;
     }
@@ -359,6 +368,8 @@ export const postCreateUser = async (req: express.Request, res: express.Response
 
     let date = new Date().toJSON();
     const { fullName, email, password, phone } = req.body
+    // console.log(req.file);
+
 
     try {
         const user = new User({
@@ -367,7 +378,7 @@ export const postCreateUser = async (req: express.Request, res: express.Response
             email: email,
             phone: phone,
             role: "USER",
-            avatar: req.file?.path,
+            avatar: req.file?.path || "",
             isActive: true,
             createdAt: date,
             updatedAt: date,
@@ -397,4 +408,84 @@ export const postCreateUser = async (req: express.Request, res: express.Response
     // console.log("req.file", req.file);
 
     // res.send("post create new user")
+}
+
+export const postUpdateUser = async (req: express.Request, res: express.Response) => {
+
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. validate user data with joi
+    try {
+
+        let error = await validateUpdateUser(req.body)
+        //console.log(">>>>", value);
+
+        if (error) {
+            return res.status(400).json({
+                errorMessage: error,
+                errorCode: -1,
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with validate update user data with joi",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 3. update User data in database:
+    let date = new Date().toJSON();
+    try {
+        let response = await User.findByIdAndUpdate(req.body._id, {
+            fullName: req.body.fullName,
+            email: req.body.email,
+            phone: req.body.phone,
+            role: req.body.role,
+            updatedAt: date
+        })
+
+        return res.status(200).json({
+            errorMessage: "Update User Successfully!!!",
+            errorCode: 0,
+            data: ""
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with update User data in database",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+    //console.log(req.body);
+
+    res.send("Put update User")
 }
