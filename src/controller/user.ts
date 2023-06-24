@@ -2,6 +2,7 @@ import express from "express"
 import mongoose from "mongoose";
 import { User } from "../db/user"
 import { userSchema, UpdateUserSchema } from "../config/joiValidate"
+const { cloudinary } = require("../cloudinary/index")
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken")
 
@@ -279,7 +280,6 @@ export const getUserPagination = async (req: express.Request, res: express.Respo
     //res.send("user paginate")
 }
 
-
 export const postCreateUser = async (req: express.Request, res: express.Response) => {
 
     // 0. verify access token
@@ -511,4 +511,61 @@ export const postUpdateUser = async (req: express.Request, res: express.Response
     //console.log(req.body);
 
     res.send("Put update User")
+}
+
+export const deleteUser = async (req: express.Request, res: express.Response) => {
+
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. delete user with specific id in the database | delete user avatar image on cloud
+
+    try {
+        let response = await User.findByIdAndRemove(req.query._id)
+        if (response?.avatar) {
+            const rawUrl: string = response?.avatar;
+            const customizeUrl: string = ("BookStoreApp" + rawUrl.split("/BookStoreApp")[1]).split(".")[0]
+            // delete avatar image on cloudinary
+            await cloudinary.uploader.destroy(customizeUrl)
+        }
+
+        return res.status(200).json({
+            errorMessage: "Delete User Successfully!!!!",
+            errorCode: 0,
+            data: response
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with delete user in the database | delete user avatar image on cloud",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    //res.send("delete user")
 }
