@@ -460,6 +460,29 @@ export const postUpdateUser = async (req: express.Request, res: express.Response
         })
     }
 
+    //2. check if email already exist in DB:
+
+    try {
+
+        let emailFound = await User.find({ email: req.body.email })
+
+        if (emailFound.length > 0 && emailFound[0].email !== req.body.email) {
+            return res.status(400).json({
+                errorMessage: "Email already exist!!!",
+                errorCode: -1,
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with check if email already exist in DB",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
     // 3. update User data in database:
     let date = new Date().toJSON();
     try {
