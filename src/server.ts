@@ -11,6 +11,7 @@ const upload = multer({ storage });
 
 import mongooseConnection from "./config/mongoose"
 import userRoute from "./routes/user"
+import bookRoute from "./routes/book"
 import authRoute from "./routes/auth"
 
 const app: Application = express();
@@ -36,6 +37,7 @@ app.use((req, res, next) => {
 
 
 app.use('/api/v1/user', upload.single('userImage'), userRoute);
+app.use('/api/v1/book', bookRoute);
 app.use('/api/v1/auth', authRoute);
 
 
