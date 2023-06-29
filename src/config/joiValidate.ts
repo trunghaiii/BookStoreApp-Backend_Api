@@ -37,3 +37,36 @@ export const UpdateUserSchema = Joi.object({
         .required(),
 
 })
+
+
+export const bookSchema = Joi.object({
+    bookName: Joi.string()
+        .min(3)
+        .max(30)
+        .required(),
+    author: Joi.string()
+        .min(3)
+        .max(30)
+        .required(),
+
+    price: Joi.number()
+        .required(),
+
+    sold: Joi.number()
+        .required(),
+
+    quantity: Joi.number()
+        .required(),
+
+    category: Joi.string()
+        .min(3)
+        .max(30)
+        .required(),
+
+    slider: Joi.any(),
+
+    createdAt: Joi.any(),
+
+    updatedAt: Joi.any(),
+
+})

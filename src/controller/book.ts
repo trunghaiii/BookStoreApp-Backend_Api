@@ -1,11 +1,19 @@
 import express from "express"
 import mongoose from "mongoose";
 import { Book } from "../db/book"
-import { userSchema, UpdateUserSchema } from "../config/joiValidate"
+import { bookSchema } from "../config/joiValidate"
 const { cloudinary } = require("../cloudinary/index")
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken")
 
+const validateBook = (userObj: object): string => {
+
+    let value = bookSchema.validate(userObj)
+    if (value?.error?.details[0]?.message) {
+        return value?.error?.details[0]?.message;
+    }
+    return ""
+}
 
 export const getBookPagination = async (req: express.Request, res: express.Response) => {
 
@@ -180,13 +188,79 @@ export const postCreateBook = async (req: express.Request, res: express.Response
         })
     }
 
-    // 1.
 
-    console.log("gg", req.body);
-    console.log("aaa", req.files);
+    // 1. build the image url array for silder filed in the database:
+    let imageArr: string[] = []
+    if (req.files && req.files.length !== 0) {
+        (req.files as any[]).forEach((image: any) => {
+            imageArr.push(image.path)
+        })
+    }
+
+    // 2. build book data ready for upload:
+    let date = new Date().toJSON();
+    const { name, author, price, genre, quantity, sold } = req.body
+    let bookData = {
+        slider: imageArr,
+        bookName: name,
+        author: author,
+        price: +price,
+        sold: +sold,
+        quantity: +quantity,
+        category: genre,
+        createdAt: date,
+        updatedAt: date,
+    }
+
+    //3. validate book data with joi
+    try {
+        let error = await validateBook(bookData)
+        //console.log(">>>>", value);
+
+        if (error) {
+            return res.status(400).json({
+                errorMessage: error,
+                errorCode: -1,
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with validate book data with joi",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 4. upload book data to the database:
+
+    try {
+        const book = new Book(bookData);
+        await book.save();
+
+        //console.log(user);
+
+        return res.status(200).json({
+            errorMessage: "Create a new book successfully",
+            errorCode: 0,
+            data: book
+        })
+    } catch (error) {
+        //console.log(error);
+
+        return res.status(400).json({
+            errorMessage: "something wrong with save book data to the DB",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // console.log("gg", req.body);
+    // console.log("aaa", req.files);
 
 
-    res.send("postCreateBook postCreateBook")
+    // res.send("postCreateBook postCreateBook")
 }
 
 
