@@ -1,7 +1,7 @@
 import express from "express"
 const apiRouter = express.Router()
 import {
-    getBookPagination
+    getBookPagination, postCreateBook
 } from "./../controller/book"
 
 // export default (userRoute: express.Router) => {
@@ -9,6 +9,8 @@ import {
 // };
 
 apiRouter.get('/', getBookPagination);
+apiRouter.post('/', postCreateBook);
+
 
 
 

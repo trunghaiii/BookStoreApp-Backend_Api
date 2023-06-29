@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 // 1. Create an interface representing a document in MongoDB.
 interface IBook {
-    thumbnail: string;
     slider: any;
     bookName: string;
     author: string;
@@ -17,7 +16,6 @@ interface IBook {
 
 // 2. Create a Schema corresponding to the document interface.
 const bookSchema = new mongoose.Schema<IBook>({
-    thumbnail: { type: String, required: false },
     slider: { type: [String], required: false },
     bookName: { type: String, required: true },
     author: { type: String, required: true },
