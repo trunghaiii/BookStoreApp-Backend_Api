@@ -1,7 +1,7 @@
 import express from "express"
 import mongoose from "mongoose";
 import { Book } from "../db/book"
-import { bookSchema } from "../config/joiValidate"
+import { bookSchema, updateBookSchema } from "../config/joiValidate"
 const { cloudinary } = require("../cloudinary/index")
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken")
@@ -14,6 +14,16 @@ const validateBook = (userObj: object): string => {
     }
     return ""
 }
+
+const validateUpdateBook = (userObj: object): string => {
+
+    let value = updateBookSchema.validate(userObj)
+    if (value?.error?.details[0]?.message) {
+        return value?.error?.details[0]?.message;
+    }
+    return ""
+}
+
 
 export const getBookPagination = async (req: express.Request, res: express.Response) => {
 
@@ -310,6 +320,98 @@ export const getUploadImage = async (req: express.Request, res: express.Response
 
     // res.send(" getUploadImage getUploadImage")
 }
+
+export const postUpdateBook = async (req: express.Request, res: express.Response) => {
+
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. build update book data ready for upload
+
+    let date = new Date().toJSON();
+    const { bookName, price, quantity, sold, id } = req.body;
+
+    const updateBookData = {
+        bookName,
+        price: +price,
+        quantity: +quantity,
+        sold: +sold,
+        updatedAt: date
+    }
+
+    //2. validate updatebook data with joi
+    try {
+        let error = await validateUpdateBook(updateBookData)
+        //console.log(">>>>", value);
+
+        if (error) {
+            return res.status(400).json({
+                errorMessage: error,
+                errorCode: -1,
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with validate updatebook data with joi",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 3. update book data in database:
+    try {
+        let response = await Book.findByIdAndUpdate(id, updateBookData)
+
+        return res.status(200).json({
+            errorMessage: "Update Book Successfully!!!",
+            errorCode: 0,
+            data: ""
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with update book data in database",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // console.log(updateBookData, id);
+
+    // res.send("postUpdateBook postUpdateBook")
+}
+
+
+
+
+
+
 
 
 // let date = new Date().toJSON();
