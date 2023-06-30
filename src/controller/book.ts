@@ -188,21 +188,21 @@ export const postCreateBook = async (req: express.Request, res: express.Response
         })
     }
 
+    // console.log(req.body);
+    // console.log(req.body.imageUrlArray.split(","));
 
-    // 1. build the image url array for silder filed in the database:
 
-    let imageArr: string[] = []
-    if (req.files && req.files.length !== 0) {
-        (req.files as any[]).forEach((image: any) => {
-            imageArr.push(image.path)
-        })
+    //1. build book data ready for upload:
+    let date = new Date().toJSON();
+    const { name, author, price, genre, quantity, sold, imageUrlArray } = req.body
+
+    let imageData: string[] = []
+    if (imageUrlArray) {
+        imageData = imageUrlArray.split(",")
     }
 
-    // 2. build book data ready for upload:
-    let date = new Date().toJSON();
-    const { name, author, price, genre, quantity, sold } = req.body
     let bookData = {
-        slider: imageArr,
+        slider: imageData,
         bookName: name,
         author: author,
         price: +price,
@@ -213,7 +213,7 @@ export const postCreateBook = async (req: express.Request, res: express.Response
         updatedAt: date,
     }
 
-    //3. validate book data with joi
+    //2. validate book data with joi
     try {
         let error = await validateBook(bookData)
         //console.log(">>>>", value);
@@ -234,7 +234,7 @@ export const postCreateBook = async (req: express.Request, res: express.Response
         })
     }
 
-    // 4. upload book data to the database:
+    // 3. upload book data to the database:
 
     try {
         const book = new Book(bookData);
