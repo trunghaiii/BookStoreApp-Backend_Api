@@ -37,7 +37,7 @@ app.use((req, res, next) => {
 
 
 app.use('/api/v1/user', upload.single('userImage'), userRoute);
-app.use('/api/v1/book', upload.array("sliderImages"), bookRoute);
+app.use('/api/v1/book', upload.single("bookImageFile"), bookRoute);
 app.use('/api/v1/auth', authRoute);
 
 

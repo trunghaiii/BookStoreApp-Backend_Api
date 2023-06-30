@@ -190,6 +190,7 @@ export const postCreateBook = async (req: express.Request, res: express.Response
 
 
     // 1. build the image url array for silder filed in the database:
+
     let imageArr: string[] = []
     if (req.files && req.files.length !== 0) {
         (req.files as any[]).forEach((image: any) => {
@@ -263,6 +264,52 @@ export const postCreateBook = async (req: express.Request, res: express.Response
     // res.send("postCreateBook postCreateBook")
 }
 
+export const getUploadImage = async (req: express.Request, res: express.Response) => {
+
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. upload image to cloudinary and send back the image url to front end
+    if (req.file) {
+        return res.status(200).json({
+            errorMessage: "upload image file to cloudinary successfully!!",
+            errorCode: 0,
+            data: req.file.path
+        })
+    } else {
+        return res.status(400).json({
+            errorMessage: "Something wrong (possibly there is no file uploaded)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+    // console.log(req.file);
+
+    // res.send(" getUploadImage getUploadImage")
+}
 
 
 // let date = new Date().toJSON();
