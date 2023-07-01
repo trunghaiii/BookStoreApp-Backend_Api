@@ -407,6 +407,67 @@ export const postUpdateBook = async (req: express.Request, res: express.Response
     // res.send("postUpdateBook postUpdateBook")
 }
 
+export const deleteBook = async (req: express.Request, res: express.Response) => {
+
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+
+    // 1. delete book based on id | delete all images in imageUrlArr on cloudinary
+
+    try {
+        let response = await Book.findByIdAndRemove(req.query.id)
+
+        if (response?.slider.length !== 0) {
+            for (let i = 0; i < response?.slider.length; i++) {
+                const rawUrl: string = response?.slider[i];
+                const customizeUrl: string = ("BookStoreApp" + rawUrl.split("/BookStoreApp")[1]).split(".")[0]
+                // delete avatar image on cloudinary
+                await cloudinary.uploader.destroy(customizeUrl)
+            }
+        }
+
+        // sent response to front end
+        return res.status(200).json({
+            errorMessage: "Delete Book Successfully!!!",
+            errorCode: 0,
+            data: response
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with delete book based on id | delete all images in imageUrlArr on cloudinary",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    //res.send("deleteBookdeleteBookdeleteBook")
+}
 
 
 
