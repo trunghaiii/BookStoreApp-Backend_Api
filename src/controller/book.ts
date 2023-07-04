@@ -76,27 +76,52 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
         //console.log(typeof (name));
 
         // find the total number of users based on filtered fields
-        try {
-            let response = await Book.find({
-                bookName: { $regex: new RegExp(String(name), "i") },
-                author: { $regex: new RegExp(String(author), "i") },
-                category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
-                price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
-            }).count()
+        if (genreArr.length !== 0) {
+            try {
+                let response = await Book.find({
+                    bookName: { $regex: new RegExp(String(name), "i") },
+                    author: { $regex: new RegExp(String(author), "i") },
+                    category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
+                    price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
+                }).count()
 
-            total = response
+                total = response
 
 
-        } catch (error) {
-            //console.log(error);
+            } catch (error) {
+                //console.log(error);
 
-            return res.status(400).json({
-                errorMessage: "something wrong with Get number of books based on filtered fields in the database",
-                errorCode: -1,
-                data: ""
-            })
+                return res.status(400).json({
+                    errorMessage: "something wrong with Get number of books based on filtered fields in the database",
+                    errorCode: -1,
+                    data: ""
+                })
 
+            }
+        } else {
+            try {
+                let response = await Book.find({
+                    bookName: { $regex: new RegExp(String(name), "i") },
+                    author: { $regex: new RegExp(String(author), "i") },
+                    category: { $regex: new RegExp(String(genre), "i") },
+                    price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
+                }).count()
+
+                total = response
+
+
+            } catch (error) {
+                //console.log(error);
+
+                return res.status(400).json({
+                    errorMessage: "something wrong with Get number of books based on filtered fields in the database",
+                    errorCode: -1,
+                    data: ""
+                })
+
+            }
         }
+
     } else {
         // find the total number of books based on nothing
 
@@ -130,23 +155,45 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
         if (!fromPrice) fromPrice = ""
         if (!toPrice) toPrice = "Infinity"
 
-        try {
-            let response = await Book.find({
-                bookName: { $regex: new RegExp(String(name), "i") },
-                author: { $regex: new RegExp(String(author), "i") },
-                category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
-                price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
-            }).skip((current - 1) * pageSize).limit(pageSize)
-            bookData = response
+        if (genreArr.length !== 0) {
+            try {
+                let response = await Book.find({
+                    bookName: { $regex: new RegExp(String(name), "i") },
+                    author: { $regex: new RegExp(String(author), "i") },
+                    category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
+                    price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
+                }).skip((current - 1) * pageSize).limit(pageSize)
+                bookData = response
 
-        } catch (error) {
-            return res.status(400).json({
-                errorMessage: "something wrong with get filtered book data based on pageSize and current got from front end",
-                errorCode: -1,
-                data: ""
-            })
+            } catch (error) {
+                return res.status(400).json({
+                    errorMessage: "something wrong with get filtered book data based on pageSize and current got from front end",
+                    errorCode: -1,
+                    data: ""
+                })
 
+            }
+        } else {
+            try {
+                let response = await Book.find({
+                    bookName: { $regex: new RegExp(String(name), "i") },
+                    author: { $regex: new RegExp(String(author), "i") },
+                    category: { $regex: new RegExp(String(genre), "i") },
+                    price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
+                }).skip((current - 1) * pageSize).limit(pageSize)
+                bookData = response
+
+            } catch (error) {
+                return res.status(400).json({
+                    errorMessage: "something wrong with get filtered book data based on pageSize and current got from front end",
+                    errorCode: -1,
+                    data: ""
+                })
+
+            }
         }
+
+
     } else {
         try {
             let response = await Book.find().skip((current - 1) * pageSize).limit(pageSize)
