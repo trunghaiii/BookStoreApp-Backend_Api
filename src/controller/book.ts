@@ -56,11 +56,16 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
         })
     }
 
-    let { name, author, genre } = req.query;
+    let { name, author, genre, genreList } = req.query;
     // // 1. Get number of user in the database:
 
+    let genreArr: string[] = []
+    if (genreList) {
+        genreArr = (genreList as string)?.split(",")
+    }
 
-    if (name || author || genre) {
+
+    if (name || author || genre || genreArr.length !== 0) {
         if (!name) name = ""
         if (!author) author = ""
         if (!genre) genre = ""
@@ -72,7 +77,7 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
             let response = await Book.find({
                 bookName: { $regex: new RegExp(String(name), "i") },
                 author: { $regex: new RegExp(String(author), "i") },
-                category: { $regex: new RegExp(String(genre), "i") }
+                category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
             }).count()
 
             total = response
@@ -114,7 +119,7 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
     // 3. getting book data based on pageSize and current got from front end:
     let current: number = Number(req.query.current);
     let bookData
-    if (name || author || genre) {
+    if (name || author || genre || genreArr.length !== 0) {
         if (!name) name = ""
         if (!author) author = ""
         if (!genre) genre = ""
@@ -123,7 +128,7 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
             let response = await Book.find({
                 bookName: { $regex: new RegExp(String(name), "i") },
                 author: { $regex: new RegExp(String(author), "i") },
-                category: { $regex: new RegExp(String(genre), "i") }
+                category: { $regex: new RegExp(String(genre), "i"), $in: genreArr }
             }).skip((current - 1) * pageSize).limit(pageSize)
             bookData = response
 
