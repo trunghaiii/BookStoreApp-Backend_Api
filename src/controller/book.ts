@@ -56,19 +56,22 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
         })
     }
 
-    let { name, author, genre, genreList } = req.query;
+    let { name, author, genre, genreList, fromPrice, toPrice } = req.query;
     // // 1. Get number of user in the database:
 
+    // convert genreList to Array
     let genreArr: string[] = []
     if (genreList) {
         genreArr = (genreList as string)?.split(",")
     }
 
 
-    if (name || author || genre || genreArr.length !== 0) {
+    if (name || author || genre || genreArr.length !== 0 || fromPrice || toPrice) {
         if (!name) name = ""
         if (!author) author = ""
         if (!genre) genre = ""
+        if (!fromPrice) fromPrice = ""
+        if (!toPrice) toPrice = "Infinity"
 
         //console.log(typeof (name));
 
@@ -78,6 +81,7 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
                 bookName: { $regex: new RegExp(String(name), "i") },
                 author: { $regex: new RegExp(String(author), "i") },
                 category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
+                price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
             }).count()
 
             total = response
@@ -119,16 +123,19 @@ export const getBookPagination = async (req: express.Request, res: express.Respo
     // 3. getting book data based on pageSize and current got from front end:
     let current: number = Number(req.query.current);
     let bookData
-    if (name || author || genre || genreArr.length !== 0) {
+    if (name || author || genre || genreArr.length !== 0 || fromPrice || toPrice) {
         if (!name) name = ""
         if (!author) author = ""
         if (!genre) genre = ""
+        if (!fromPrice) fromPrice = ""
+        if (!toPrice) toPrice = "Infinity"
 
         try {
             let response = await Book.find({
                 bookName: { $regex: new RegExp(String(name), "i") },
                 author: { $regex: new RegExp(String(author), "i") },
-                category: { $regex: new RegExp(String(genre), "i"), $in: genreArr }
+                category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
+                price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
             }).skip((current - 1) * pageSize).limit(pageSize)
             bookData = response
 
