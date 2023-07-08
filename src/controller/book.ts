@@ -738,10 +738,10 @@ export const postComment = async (req: express.Request, res: express.Response) =
 
     try {
         let book = await Book.findById("64a35b35be96b9f413e1bb73")
-        let user = await User.findById("64838282245570005244ce3e")
+        let user = await User.findById("64a9e997857ff9c07dbaf92e")
         let comment = new Comment({
-            content: "Hai comment to hooker",
-            rate: 4,
+            content: "Dewey comment to hooker",
+            rate: 5,
             owner: user
         })
 
@@ -756,7 +756,74 @@ export const postComment = async (req: express.Request, res: express.Response) =
     res.send("postComment postComment")
 }
 
+export const getComment = async (req: express.Request, res: express.Response) => {
 
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. get comment detail by Book Id
+    let commentInfo: any = []
+    try {
+        // find all comment of a book based on book ID
+        let book = await Book.findById(req.query.bookId).populate('comments')
+
+        // find owner of each comment and customize commentInfo ready to send to front end
+        if (book && book.comments) {
+            for (let i = 0; i < book.comments.length; i++) {
+                let commentResponse = await Comment.findById(book.comments[i]._id).populate('owner')
+
+                commentInfo.push({
+                    content: commentResponse?.content,
+                    rate: commentResponse?.rate,
+                    ownerName: commentResponse?.owner.fullName,
+                    ownerAvatar: commentResponse?.owner.avatar
+                })
+            }
+        }
+
+
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with finding comments based on book id",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // 2. send data to front end
+    return res.status(200).json({
+        errorMessage: "Get comment Detail successfully!!!",
+        errorCode: 0,
+        data: commentInfo
+    })
+
+    res.send("getComment getComment")
+}
 
 // let date = new Date().toJSON();
 

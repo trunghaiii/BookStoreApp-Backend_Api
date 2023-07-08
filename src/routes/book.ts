@@ -5,7 +5,7 @@ import {
     getUploadImage, postUpdateBook,
     deleteBook, getBookDetail,
     getHomeBookPagination,
-    postComment
+    postComment, getComment
 } from "./../controller/book"
 
 // export default (userRoute: express.Router) => {
@@ -20,6 +20,8 @@ apiRouter.put('/', postUpdateBook);
 apiRouter.delete('/', deleteBook);
 apiRouter.get('/detail', getBookDetail);
 apiRouter.post('/comment', postComment);
+apiRouter.get('/comment', getComment);
+
 
 
 
