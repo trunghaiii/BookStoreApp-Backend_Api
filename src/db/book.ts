@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 // 1. Create an interface representing a document in MongoDB.
@@ -11,6 +12,7 @@ interface IBook {
     category: string;
     createdAt: any;
     updatedAt: any;
+    comment: any
 
 }
 
@@ -25,6 +27,12 @@ const bookSchema = new mongoose.Schema<IBook>({
     category: { type: String, required: true },
     createdAt: { type: Date, required: true },
     updatedAt: { type: Date, required: true },
+    comment: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Comment"
+        }
+    ]
 
 
 });

@@ -732,6 +732,9 @@ export const getHomeBookPagination = async (req: express.Request, res: express.R
 
 }
 
+export const postComment = async (req: express.Request, res: express.Response) => {
+    res.send("postComment postComment")
+}
 
 
 
