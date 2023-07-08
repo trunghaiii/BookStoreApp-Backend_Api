@@ -552,6 +552,185 @@ export const getBookDetail = async (req: express.Request, res: express.Response)
     // res.send("getBookDetail getBookDetail")
 }
 
+export const getHomeBookPagination = async (req: express.Request, res: express.Response) => {
+
+    let pages: number; // number of pages distributed for users number
+    let total: number; // total number of users
+
+    let { name, author, genre, genreList, fromPrice, toPrice } = req.query;
+
+    // 1. Get number of user in the database:
+
+    // convert genreList to Array
+    let genreArr: string[] = []
+    if (genreList) {
+        genreArr = (genreList as string)?.split(",")
+    }
+
+
+    if (name || author || genre || genreArr.length !== 0 || fromPrice || toPrice) {
+        if (!name) name = ""
+        if (!author) author = ""
+        if (!genre) genre = ""
+        if (!fromPrice) fromPrice = ""
+        if (!toPrice) toPrice = "Infinity"
+
+        //console.log(typeof (name));
+
+        // find the total number of users based on filtered fields
+        if (genreArr.length !== 0) {
+            try {
+                let response = await Book.find({
+                    bookName: { $regex: new RegExp(String(name), "i") },
+                    author: { $regex: new RegExp(String(author), "i") },
+                    category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
+                    price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
+                }).count()
+
+                total = response
+
+
+            } catch (error) {
+                //console.log(error);
+
+                return res.status(400).json({
+                    errorMessage: "something wrong with Get number of books based on filtered fields in the database",
+                    errorCode: -1,
+                    data: ""
+                })
+
+            }
+        } else {
+            try {
+                let response = await Book.find({
+                    bookName: { $regex: new RegExp(String(name), "i") },
+                    author: { $regex: new RegExp(String(author), "i") },
+                    category: { $regex: new RegExp(String(genre), "i") },
+                    price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
+                }).count()
+
+                total = response
+
+
+            } catch (error) {
+                //console.log(error);
+
+                return res.status(400).json({
+                    errorMessage: "something wrong with Get number of books based on filtered fields in the database",
+                    errorCode: -1,
+                    data: ""
+                })
+
+            }
+        }
+
+    } else {
+        // find the total number of books based on nothing
+
+        try {
+            let response = await Book.collection.count();
+            total = response;
+
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "something wrong with Get number of user in the database",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+    }
+
+
+    // 2. calculate pages
+    let pageSize: number = Number(req.query.pageSize);
+    pages = Math.ceil(total / pageSize)
+
+
+    // 3. getting book data based on pageSize and current got from front end:
+    let current: number = Number(req.query.current);
+    let bookData
+    if (name || author || genre || genreArr.length !== 0 || fromPrice || toPrice) {
+        if (!name) name = ""
+        if (!author) author = ""
+        if (!genre) genre = ""
+        if (!fromPrice) fromPrice = ""
+        if (!toPrice) toPrice = "Infinity"
+
+        if (genreArr.length !== 0) {
+            try {
+                let response = await Book.find({
+                    bookName: { $regex: new RegExp(String(name), "i") },
+                    author: { $regex: new RegExp(String(author), "i") },
+                    category: { $regex: new RegExp(String(genre), "i"), $in: genreArr },
+                    price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
+                }).skip((current - 1) * pageSize).limit(pageSize)
+                bookData = response
+
+            } catch (error) {
+                return res.status(400).json({
+                    errorMessage: "something wrong with get filtered book data based on pageSize and current got from front end",
+                    errorCode: -1,
+                    data: ""
+                })
+
+            }
+        } else {
+            try {
+                let response = await Book.find({
+                    bookName: { $regex: new RegExp(String(name), "i") },
+                    author: { $regex: new RegExp(String(author), "i") },
+                    category: { $regex: new RegExp(String(genre), "i") },
+                    price: { $gte: Number(fromPrice), $lte: Number(toPrice) }
+                }).skip((current - 1) * pageSize).limit(pageSize)
+                bookData = response
+
+            } catch (error) {
+                return res.status(400).json({
+                    errorMessage: "something wrong with get filtered book data based on pageSize and current got from front end",
+                    errorCode: -1,
+                    data: ""
+                })
+
+            }
+        }
+
+
+    } else {
+        try {
+            let response = await Book.find().skip((current - 1) * pageSize).limit(pageSize)
+            bookData = response
+
+        } catch (error) {
+            return res.status(400).json({
+                errorMessage: "something wrong with get book data based on pageSize and current got from front end",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+    }
+
+
+    // 4. return data for front end:
+    return res.status(200).json({
+        errorMessage: "Get all books with pagination successfully",
+        errorCode: 0,
+        data: {
+            meta: {
+                current: current,
+                pageSize: pageSize,
+                pages: pages,
+                total: total
+            },
+            result: bookData
+        }
+    })
+
+
+
+
+}
 
 
 
