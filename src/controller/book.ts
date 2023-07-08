@@ -1,6 +1,8 @@
 import express from "express"
 import mongoose from "mongoose";
 import { Book } from "../db/book"
+import { Comment } from "../db/comment"
+import { User } from "../db/user"
 import { bookSchema, updateBookSchema } from "../config/joiValidate"
 const { cloudinary } = require("../cloudinary/index")
 const bcrypt = require('bcrypt');
@@ -733,6 +735,24 @@ export const getHomeBookPagination = async (req: express.Request, res: express.R
 }
 
 export const postComment = async (req: express.Request, res: express.Response) => {
+
+    try {
+        let book = await Book.findById("64a35b35be96b9f413e1bb73")
+        let user = await User.findById("64838282245570005244ce3e")
+        let comment = new Comment({
+            content: "Hai comment to hooker",
+            rate: 4,
+            owner: user
+        })
+
+        book?.comments.push(comment)
+
+        await book?.save()
+        await comment.save()
+    } catch (error) {
+        console.log(error);
+
+    }
     res.send("postComment postComment")
 }
 

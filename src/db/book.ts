@@ -12,7 +12,7 @@ interface IBook {
     category: string;
     createdAt: any;
     updatedAt: any;
-    comment: any
+    comments: any
 
 }
 
@@ -27,7 +27,7 @@ const bookSchema = new mongoose.Schema<IBook>({
     category: { type: String, required: true },
     createdAt: { type: Date, required: true },
     updatedAt: { type: Date, required: true },
-    comment: [
+    comments: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Comment"
