@@ -3,7 +3,7 @@ const apiRouter = express.Router()
 import {
     getBookPagination, postCreateBook,
     getUploadImage, postUpdateBook,
-    deleteBook
+    deleteBook, getBookDetail
 } from "./../controller/book"
 
 // export default (userRoute: express.Router) => {
@@ -15,6 +15,8 @@ apiRouter.post('/upload-image', getUploadImage);
 apiRouter.post('/', postCreateBook);
 apiRouter.put('/', postUpdateBook);
 apiRouter.delete('/', deleteBook);
+apiRouter.get('/detail', getBookDetail);
+
 
 
 

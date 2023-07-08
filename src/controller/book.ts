@@ -528,7 +528,29 @@ export const deleteBook = async (req: express.Request, res: express.Response) =>
     //res.send("deleteBookdeleteBookdeleteBook")
 }
 
+export const getBookDetail = async (req: express.Request, res: express.Response) => {
 
+    // get book detail by Id from database
+    try {
+        let response = await Book.findById(req.query.bookId)
+
+        return res.status(200).json({
+            errorMessage: "Get Book Detail successfully",
+            errorCode: 0,
+            data: response
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with Get Book Detail by Id",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // res.send("getBookDetail getBookDetail")
+}
 
 
 
