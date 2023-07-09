@@ -846,9 +846,10 @@ export const getComment = async (req: express.Request, res: express.Response) =>
                 commentInfo.push({
                     content: commentResponse?.content,
                     rate: commentResponse?.rate,
+                    commentId: commentResponse?._id,
                     ownerName: commentResponse?.owner.fullName,
                     ownerAvatar: commentResponse?.owner.avatar,
-                    onwerId: commentResponse?.owner._id
+                    ownerId: commentResponse?.owner._id
                 })
             }
         }
@@ -872,6 +873,61 @@ export const getComment = async (req: express.Request, res: express.Response) =>
     })
 
     res.send("getComment getComment")
+}
+
+export const deleteComment = async (req: express.Request, res: express.Response) => {
+
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. delete comment and delete comment reference in Book Database
+
+    try {
+        //delete comment
+        let commentResponse = await Comment.findByIdAndRemove(req.query.commentId)
+        // delete comment reference in Book Database
+        let commentInBookResponse = await Book.findByIdAndUpdate(
+            req.query.bookId,
+            { $pull: { comments: req.query.commentId } })
+
+        return res.status(200).json({
+            errorMessage: "Delete comment successfully!!!",
+            errorCode: 0,
+            data: ""
+        })
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with delete comment and delete comment reference in Book Database",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    res.send("deleteComment deleteComment")
 }
 
 // let date = new Date().toJSON();
