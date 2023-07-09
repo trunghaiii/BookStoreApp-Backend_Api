@@ -847,7 +847,8 @@ export const getComment = async (req: express.Request, res: express.Response) =>
                     content: commentResponse?.content,
                     rate: commentResponse?.rate,
                     ownerName: commentResponse?.owner.fullName,
-                    ownerAvatar: commentResponse?.owner.avatar
+                    ownerAvatar: commentResponse?.owner.avatar,
+                    onwerId: commentResponse?.owner._id
                 })
             }
         }
