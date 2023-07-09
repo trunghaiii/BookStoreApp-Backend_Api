@@ -736,23 +736,66 @@ export const getHomeBookPagination = async (req: express.Request, res: express.R
 
 export const postComment = async (req: express.Request, res: express.Response) => {
 
+    // 0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    const { bookId, userId, content, rate } = req.query;
+    // 1. save comment content to the database
     try {
-        let book = await Book.findById("64a35b35be96b9f413e1bb73")
-        let user = await User.findById("64a9e997857ff9c07dbaf92e")
+        // find book with bookId in DB
+        let book = await Book.findById(bookId)
+        // find user with userId in DB
+        let user = await User.findById(userId)
+        // create new comment
         let comment = new Comment({
-            content: "Dewey comment to hooker",
-            rate: 5,
+            content: content,
+            rate: Number(rate),
             owner: user
         })
 
+        // push new comment to book comments arr
         book?.comments.push(comment)
 
         await book?.save()
         await comment.save()
+
+        return res.status(200).json({
+            errorMessage: "Create comment successfully!!!",
+            errorCode: 0,
+            data: ""
+        })
     } catch (error) {
-        console.log(error);
+        return res.status(400).json({
+            errorMessage: "Something wrong with save comment content to the database",
+            errorCode: -1,
+            data: ""
+        })
 
     }
+
     res.send("postComment postComment")
 }
 
