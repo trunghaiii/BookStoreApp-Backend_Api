@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { Book } from "../db/book"
 import { Comment } from "../db/comment"
 import { User } from "../db/user"
-import { bookSchema, updateBookSchema } from "../config/joiValidate"
+import { bookSchema, updateBookSchema, commentSchema } from "../config/joiValidate"
 const { cloudinary } = require("../cloudinary/index")
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken")
@@ -20,6 +20,15 @@ const validateBook = (userObj: object): string => {
 const validateUpdateBook = (userObj: object): string => {
 
     let value = updateBookSchema.validate(userObj)
+    if (value?.error?.details[0]?.message) {
+        return value?.error?.details[0]?.message;
+    }
+    return ""
+}
+
+const validateComment = (commentObj: object): string => {
+
+    let value = commentSchema.validate(commentObj)
     if (value?.error?.details[0]?.message) {
         return value?.error?.details[0]?.message;
     }
@@ -763,7 +772,28 @@ export const postComment = async (req: express.Request, res: express.Response) =
     }
 
     const { bookId, userId, content, rate } = req.query;
-    // 1. save comment content to the database
+
+    //1. validate comment data with joi
+    try {
+        let error = await validateComment({ bookId, userId, content, rate })
+        //console.log(">>>>", value);
+
+        if (error) {
+            return res.status(400).json({
+                errorMessage: error,
+                errorCode: -1,
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with validate comment data with joi",
+            errorCode: -1,
+            data: ""
+        })
+    }
+    // 2. save comment content to the database
     try {
         // find book with bookId in DB
         let book = await Book.findById(bookId)

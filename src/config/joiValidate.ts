@@ -89,3 +89,22 @@ export const updateBookSchema = Joi.object({
     updatedAt: Joi.any(),
 
 })
+
+export const commentSchema = Joi.object({
+    bookId: Joi.string()
+        .required(),
+
+    userId: Joi.string()
+        .required(),
+
+    content: Joi.string()
+        .min(5)
+        .max(150)
+        .required(),
+
+    rate: Joi.number()
+        .min(1)
+        .max(5)
+        .required(),
+
+})
