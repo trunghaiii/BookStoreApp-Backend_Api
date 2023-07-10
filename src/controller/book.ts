@@ -505,8 +505,23 @@ export const deleteBook = async (req: express.Request, res: express.Response) =>
         })
     }
 
+    // 1. Delete comments in delete book:
+    try {
+        let bookResponse = await Book.findById(req.query.id).select("comments")
 
-    // 1. delete book based on id | delete all images in imageUrlArr on cloudinary
+        for (let i = 0; i < bookResponse?.comments.length; i++) {
+            let commentResponse = await Comment.findByIdAndRemove(bookResponse?.comments[i])
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with Delete comments in delete book",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+    // 2. delete book based on id | delete all images in imageUrlArr on cloudinary
 
     try {
         let response = await Book.findByIdAndRemove(req.query.id)
