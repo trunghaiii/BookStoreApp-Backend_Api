@@ -1,6 +1,8 @@
 import express from "express"
 import mongoose from "mongoose";
 import { User } from "../db/user"
+import { Book } from "../db/book"
+import { Comment } from "../db/comment"
 import { userSchema, UpdateUserSchema } from "../config/joiValidate"
 const { cloudinary } = require("../cloudinary/index")
 const bcrypt = require('bcrypt');
@@ -541,6 +543,7 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
         })
     }
 
+
     // 1. delete user with specific id in the database | delete user avatar image on cloud
 
     try {
@@ -552,11 +555,6 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
             await cloudinary.uploader.destroy(customizeUrl)
         }
 
-        return res.status(200).json({
-            errorMessage: "Delete User Successfully!!!!",
-            errorCode: 0,
-            data: response
-        })
 
     } catch (error) {
         return res.status(400).json({
@@ -567,5 +565,36 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
 
     }
 
+    // 2. delete comments associated with deleted user 
+    try {
+
+        // find all comments id associated with deleted user
+        let response = await Comment.find({ owner: req.query._id }).select('_id')
+
+        for (let i = 0; i < response.length; i++) {
+            //delete comment
+            let commentResponse = await Comment.findByIdAndRemove(response[i]._id)
+            // find book id by comment id:
+            let bookResponse = await Book.find({ comments: { $in: [response[i]._id] } }).select("_id")
+            // delete comment reference in Book Database
+            let commentInBookResponse = await Book.findByIdAndUpdate(
+                bookResponse[0]._id,
+                { $pull: { comments: response[i]._id } })
+        }
+
+        return res.status(200).json({
+            errorMessage: "Delete User Successfully!!!!",
+            errorCode: 0,
+            data: response
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with delete comments associated with deleted user ",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
     //res.send("delete user")
 }
