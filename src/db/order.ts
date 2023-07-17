@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema<IOrder>({
     name: { type: String, required: true },
     address: { type: String, required: true },
     phone: { type: String, required: true },
-    detail: { type: [], required: false },
+    detail: { type: [], required: true },
     totalPrice: { type: Number, required: true },
     createdAt: { type: Date, required: true },
     updatedAt: { type: Date, required: true },

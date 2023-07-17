@@ -23,6 +23,10 @@ const PORT = process.env.PORT || 6969;
 app.use(bodyParser.urlencoded({ extended: true }));
 //config to get cookies value
 app.use(cookieParser());
+
+// config middleware to access raw data
+app.use(bodyParser.json({ type: 'application/json' }));
+
 // config to fix being blocked by cors policy when call api from frontend
 app.use(cors({
     origin: 'http://localhost:3000', // Specify the allowed origin

@@ -108,3 +108,20 @@ export const commentSchema = Joi.object({
         .required(),
 
 })
+
+export const orderSchema = Joi.object({
+    name: Joi.string()
+        .required(),
+
+    address: Joi.string()
+        .required(),
+
+    phone: Joi.string()
+        .required(),
+
+    detail: Joi.any(),
+    totalPrice: Joi.any(),
+    createdAt: Joi.any(),
+    updatedAt: Joi.any(),
+
+})
