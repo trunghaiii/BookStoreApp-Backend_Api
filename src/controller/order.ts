@@ -73,6 +73,7 @@ export const postOrder = async (req: express.Request, res: express.Response) => 
             totalPrice: req.body.totalPrice,
             createdAt: date,
             updatedAt: date,
+            userId: req.body.userId,
         })
         newOrder.save()
 

@@ -123,5 +123,7 @@ export const orderSchema = Joi.object({
     totalPrice: Joi.any(),
     createdAt: Joi.any(),
     updatedAt: Joi.any(),
+    userId: Joi.string()
+        .required(),
 
 })

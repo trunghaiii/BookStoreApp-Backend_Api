@@ -10,6 +10,7 @@ interface IOrder {
     totalPrice: number;
     createdAt: any;
     updatedAt: any;
+    userId: string;
 
 }
 
@@ -22,6 +23,7 @@ const orderSchema = new mongoose.Schema<IOrder>({
     totalPrice: { type: Number, required: true },
     createdAt: { type: Date, required: true },
     updatedAt: { type: Date, required: true },
+    userId: { type: String, required: true },
 });
 
 // 3. Create a Model.
