@@ -664,7 +664,7 @@ export const putUpdateUserInfo = async (req: express.Request, res: express.Respo
             return res.status(200).json({
                 errorMessage: "Update User info successfully!!!",
                 errorCode: 0,
-                data: ""
+                data: response
             })
         } catch (error) {
             return res.status(400).json({
@@ -687,7 +687,7 @@ export const putUpdateUserInfo = async (req: express.Request, res: express.Respo
             return res.status(200).json({
                 errorMessage: "Update User info successfully!!!",
                 errorCode: 0,
-                data: ""
+                data: response
             })
         } catch (error) {
             return res.status(400).json({
