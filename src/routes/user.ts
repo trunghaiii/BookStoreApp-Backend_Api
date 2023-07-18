@@ -3,7 +3,7 @@ const apiRouter = express.Router()
 import {
     postRegisterUser, getUserPagination,
     postCreateUser, postUpdateUser, deleteUser,
-    putUpdateUserInfo
+    putUpdateUserInfo, putUpdatePassword
 } from "./../controller/user"
 
 // export default (userRoute: express.Router) => {
@@ -16,6 +16,7 @@ apiRouter.post('/', postCreateUser);
 apiRouter.put('/', postUpdateUser);
 apiRouter.delete('/', deleteUser);
 apiRouter.put('/info', putUpdateUserInfo);
+apiRouter.put('/password', putUpdatePassword);
 
 
 

@@ -705,3 +705,103 @@ export const putUpdateUserInfo = async (req: express.Request, res: express.Respo
 
     res.send("putUpdateUserInfo")
 }
+
+export const putUpdatePassword = async (req: express.Request, res: express.Response) => {
+
+    // 0. verify access token
+    let accountUser: any;
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+            accountUser = decoded
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. check if old password is correct:
+
+    // find hashpassword based on user id:
+    let oldHashPassword: any;
+    try {
+        let user = await User.findById(accountUser.data.id)
+        oldHashPassword = user?.password
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with find hashpassword based on user id",
+            errorCode: -1,
+            data: ""
+        })
+    }
+    // check if old password is correct (match)
+    try {
+        const match = await bcrypt.compare(req.body.oldPassword, oldHashPassword)
+        if (match === false) {
+            return res.status(400).json({
+                errorMessage: "Your Old password you typed is Incorrect!!!",
+                errorCode: -1,
+                data: ""
+            })
+        }
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with check if old password is correct",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+
+    //2. encrypt password:
+    let hashPassword: string
+    try {
+        hashPassword = await encryptPassword(req.body.password)
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "something wrong with encrypt password",
+            errorCode: -1,
+            data: ""
+        })
+    }
+    // 3. Update new password to the database:
+    let date = new Date().toJSON();
+    try {
+        let response = await User.findByIdAndUpdate(accountUser.data.id,
+            {
+                password: hashPassword,
+                updatedAt: date
+            })
+        return res.status(200).json({
+            errorMessage: "Update User Password successfully!!!",
+            errorCode: 0,
+            data: ""
+        })
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with Update new password to the database",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // console.log(accountUser);
+
+    res.send("putUpdatePassword")
+}
