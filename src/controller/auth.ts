@@ -103,6 +103,13 @@ export const postLogin = async (req: express.Request, res: express.Response) => 
             //sameSite: 'strict' // Only send the cookie for same-site requests
         });
 
+        res.cookie('user_id', emailFound[0]._id, {
+            maxAge: 86400000, // Cookie expiration time in milliseconds (24h)
+            httpOnly: true, // Restrict access to the cookie from client-side JavaScript
+            secure: false, // Only send the cookie over HTTPS
+            //sameSite: 'strict' // Only send the cookie for same-site requests
+        });
+
         return res.status(200).json({
             errorMessage: "Login Successfully!!!",
             errorCode: 0,
@@ -215,12 +222,33 @@ export const postLogOut = async (req: express.Request, res: express.Response) =>
 
 export const getRefreshToken = async (req: express.Request, res: express.Response) => {
     let refresh_token = req.cookies.refresh_token;
+    let user_id = req.cookies.user_id;
 
+    // 0. find the user data (latest) in the DB
+    let latestUserData: any;
+    try {
+        let response = await User.findById(user_id);
+        latestUserData = {
+            id: response?._id,
+            email: response?.email,
+            phone: response?.phone,
+            fullName: response?.fullName,
+            role: response?.role,
+            avatar: response?.avatar
+        }
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with find the user data (latest) in the DB",
+            errorCode: -1,
+            data: ""
+        })
+    }
     // 1. verify and decode the refresh token to get user infomation
     let userData;
     try {
         const decoded = await jwt.verify(refresh_token, process.env.REFRESH_TOKEN_KEY);
-        userData = decoded;
+        userData = latestUserData;
 
     } catch (error) {
         return res.status(401).json({
@@ -232,7 +260,7 @@ export const getRefreshToken = async (req: express.Request, res: express.Respons
     }
 
     // 2. generate new pair of access token and refresh token
-    let token = generateToken(userData.data)
+    let token = generateToken(userData)
 
     // 3. set cookies with new refresh token
     res.cookie('refresh_token', token.refresh_token, {
@@ -247,7 +275,7 @@ export const getRefreshToken = async (req: express.Request, res: express.Respons
         errorCode: 0,
         data: {
             access_token: token.access_token,
-            user: userData.data
+            user: userData
         }
     })
     console.log(token);
