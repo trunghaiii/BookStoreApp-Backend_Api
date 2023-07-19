@@ -693,7 +693,8 @@ export const putUpdateUserInfo = async (req: express.Request, res: express.Respo
                 errorCode: 0,
                 data: {
                     fullName: req.body.userName,
-                    phone: req.body.phone
+                    phone: req.body.phone,
+                    avatar: ""
                 }
             })
         } catch (error) {
