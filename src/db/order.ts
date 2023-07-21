@@ -11,6 +11,7 @@ interface IOrder {
     createdAt: any;
     updatedAt: any;
     userId: string;
+    isFinished: boolean;
 
 }
 
@@ -24,6 +25,7 @@ const orderSchema = new mongoose.Schema<IOrder>({
     createdAt: { type: Date, required: true },
     updatedAt: { type: Date, required: true },
     userId: { type: String, required: true },
+    isFinished: { type: Boolean, required: true },
 });
 
 // 3. Create a Model.

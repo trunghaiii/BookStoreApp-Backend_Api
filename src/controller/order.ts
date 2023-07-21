@@ -74,6 +74,7 @@ export const postOrder = async (req: express.Request, res: express.Response) => 
             createdAt: date,
             updatedAt: date,
             userId: req.body.userId,
+            isFinished: false
         })
         newOrder.save()
 
