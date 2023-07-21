@@ -146,3 +146,74 @@ export const getOrderHistory = async (req: express.Request, res: express.Respons
 
     res.send("getOrderHistory getOrderHistory")
 }
+
+export const getOrderPagination = async (req: express.Request, res: express.Response) => {
+
+    //0. verify access token
+    if (req.headers.authorization) {
+        //1. get access token sent from front end
+        let access_token = req.headers.authorization.split(' ')[1]
+
+        try {
+            // 2. verify accesstoken
+            const decoded = await jwt.verify(access_token, process.env.ACCESS_TOKEN_KEY);
+
+        } catch (error) {
+            return res.status(401).json({
+                errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+                errorCode: -1,
+                data: ""
+            })
+
+        }
+
+    } else {
+        return res.status(401).json({
+            errorMessage: "Something wrong with your access token(invalid,expired,not exist...)",
+            errorCode: -1,
+            data: ""
+        })
+    }
+
+    // 1. get total number of order in the DB
+    let totalOrder: number;
+    try {
+        let response = await Order.find().count()
+        totalOrder = response;
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with get total number of order in the DB",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // 2. Get order from database based on current and pageSize got from front end:
+    try {
+        let response = await Order.find()
+            .skip((Number(req.query.current) - 1) * Number(req.query.pageSize))
+            .limit(Number(req.query.pageSize))
+
+        return res.status(200).json({
+            errorMessage: "Get Order detail with Pagination successfully!!!",
+            errorCode: 0,
+            data: {
+                totalOrder: totalOrder,
+                orderDetail: response
+            }
+        })
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with Get order from database based on current and pageSize",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+    // console.log(req.query);
+
+    // res.send("getOrder")
+}
