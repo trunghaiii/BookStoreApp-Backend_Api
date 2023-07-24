@@ -2,14 +2,14 @@ import express from "express"
 const apiRouter = express.Router()
 import {
     postOrder, getOrderHistory,
-    getOrderPagination, postMarkDelivered
+    getOrderPagination, postMarkDeliveredPending
 } from "./../controller/order"
 
 
 apiRouter.post('/', postOrder);
 apiRouter.get('/history', getOrderHistory);
 apiRouter.get('/', getOrderPagination);
-apiRouter.post('/delivered', postMarkDelivered);
+apiRouter.post('/delivered', postMarkDeliveredPending);
 
 
 

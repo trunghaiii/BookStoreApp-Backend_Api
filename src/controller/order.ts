@@ -2,6 +2,7 @@ import express from "express"
 import mongoose from "mongoose";
 import { Order } from "../db/order"
 import { orderSchema } from "../config/joiValidate"
+import e from "express";
 const jwt = require("jsonwebtoken")
 
 const validateOrder = (userObj: object): string => {
@@ -218,7 +219,7 @@ export const getOrderPagination = async (req: express.Request, res: express.Resp
     // res.send("getOrder")
 }
 
-export const postMarkDelivered = async (req: express.Request, res: express.Response) => {
+export const postMarkDeliveredPending = async (req: express.Request, res: express.Response) => {
 
     //0. verify access token
     if (req.headers.authorization) {
@@ -246,26 +247,35 @@ export const postMarkDelivered = async (req: express.Request, res: express.Respo
         })
     }
 
-    // 1. change the order status to true in the database:
+    // 1. change the order status to true | false in the database:
+    let isFinished: boolean = req.query.isFinished === "true" ? true : false;
 
     try {
-        let response = await Order.findByIdAndUpdate(req.query.id, { isFinished: true })
+        let response = await Order.findByIdAndUpdate(req.query.id, { isFinished: !isFinished })
 
+        if (isFinished) {
+            return res.status(200).json({
+                errorMessage: "Mark Order Pending Successfully!!!",
+                errorCode: 0,
+                data: ""
+            })
+        }
         return res.status(200).json({
             errorMessage: "Mark Order Delivered Successfully!!!",
             errorCode: 0,
             data: ""
         })
 
+
     } catch (error) {
         return res.status(400).json({
-            errorMessage: "Something wrong with change the order status to true in the database",
+            errorMessage: "Something wrong with change the order status to true | false in the database",
             errorCode: -1,
             data: ""
         })
 
     }
-    // console.log(req.query);
+    //console.log(req.query);
 
     // res.send("postMarkDelivered")
 }
