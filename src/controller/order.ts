@@ -125,14 +125,36 @@ export const getOrderHistory = async (req: express.Request, res: express.Respons
         })
     }
 
-    // 1. find order detail based on userId decoded from jwt token:
+    // 1. get total number of order based on userId decoded from jwt token in the DB
     let userId = accountInfo.data.id;
+    let totalOrder: number;
+    try {
+        let response = await Order.find({ userId: userId }).count()
+        totalOrder = response;
+
+    } catch (error) {
+        return res.status(400).json({
+            errorMessage: "Something wrong with get total number of order based on userId decoded from jwt token in the DB",
+            errorCode: -1,
+            data: ""
+        })
+
+    }
+
+    // 2. find order detail based on userId decoded from jwt token:
+    // console.log(req.query);
+
     try {
         let response = await Order.find({ userId: userId })
+            .skip((Number(req.query.current) - 1) * Number(req.query.pageSize))
+            .limit(Number(req.query.pageSize))
         return res.status(200).json({
             errorMessage: "Get order history Successfully!!!",
             errorCode: 0,
-            data: response
+            data: {
+                totalOrder: totalOrder,
+                orderDetail: response
+            }
         })
 
     } catch (error) {
