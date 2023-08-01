@@ -30,13 +30,13 @@ app.use(bodyParser.json({ type: 'application/json' }));
 
 // config to fix being blocked by cors policy when call api from frontend
 app.use(cors({
-    origin: 'http://localhost:3000', // Specify the allowed origin
+    origin: 'https://book-store-app-front-end.vercel.app', // Specify the allowed origin
     credentials: true, // Allow credentials 
 }));
 
 // fix bug blocked by cors policy
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Origin', 'https://book-store-app-front-end.vercel.app');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
 });
