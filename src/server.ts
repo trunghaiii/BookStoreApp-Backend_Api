@@ -20,7 +20,6 @@ const app: Application = express();
 
 const PORT = process.env.PORT || 6969;
 
-app.use(cors())
 
 //config to get req.body from client input
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,17 +31,17 @@ app.use(cookieParser());
 app.use(bodyParser.json({ type: 'application/json' }));
 
 // config to fix being blocked by cors policy when call api from frontend
-// app.use(cors({
-//     origin: 'https://book-store-app-front-end.vercel.app', // Specify the allowed origin
-//     credentials: true, // Allow credentials 
-// }));
+app.use(cors({
+    origin: 'https://book-store-app-front-end.vercel.app/', // Specify the allowed origin
+    credentials: true, // Allow credentials 
+}));
 
 // fix bug blocked by cors policy
-// app.use((req, res, next) => {
-//     res.setHeader('Access-Control-Allow-Origin', 'https://book-store-app-front-end.vercel.app');
-//     res.setHeader('Access-Control-Allow-Credentials', 'true');
-//     next();
-// });
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'https://book-store-app-front-end.vercel.app/');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
+});
 
 
 app.use('/api/v1/user', upload.single('userImage'), userRoute);
