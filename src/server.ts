@@ -33,15 +33,16 @@ app.use(bodyParser.json({ type: 'application/json' }));
 // config to fix being blocked by cors policy when call api from frontend
 
 // https://book-store-app-front-end.vercel.app ==> production
+// https://hai.bookstorenow.store ==> production
 // http://localhost:3000  ==>  development
 app.use(cors({
-    origin: 'http://localhost:3000', // Specify the allowed origin
+    origin: 'https://hai.bookstorenow.store', // Specify the allowed origin
     credentials: true, // Allow credentials 
 }));
 
 // fix bug blocked by cors policy
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Origin', 'https://hai.bookstorenow.store');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
 });
